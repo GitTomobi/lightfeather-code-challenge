@@ -8,26 +8,21 @@ resource "aws_vpc" "codeVPC" {
   }
 }
 
-# Public subnet
-resource "aws_subnet" "public" {
-  vpc_id                  = aws_vpc.codeVPC.id
-  cidr_block              = "10.0.0.0/24"
-  map_public_ip_on_launch = "true"
-  availability_zone       = "us-east-1a"
-
-  tags = {
-    Name = "Code-Public Subnet"
-  }
+# Specify 3 availability zones from the region
+variable "availability_zones" {
+  default = ["us-east-1a", "us-east-1b", "us-east-1c"]
 }
 
-# Private subnet
-resource "aws_subnet" "private" {
-  vpc_id            = aws_vpc.codeVPC.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "us-east-1a"
+# Public subnets
+resource "aws_subnet" "public" {
+  count                   = length(var.availability_zones)
+  vpc_id                  = aws_vpc.codeVPC.id
+  cidr_block              = cidrsubnet("10.0.0.0/16", 8, count.index)
+  map_public_ip_on_launch = "true"
+  availability_zone       = var.availability_zones[count.index]
 
   tags = {
-    Name = "Code-Private Subnet"
+    Name = "Code-Public-${var.availability_zones[count.index]}"
   }
 }
 
@@ -37,24 +32,6 @@ resource "aws_internet_gateway" "code-igw" {
   tags = {
     Name = "code-igw"
   }
-}
-
-#Elastic IP for NAT
-resource "aws_eip" "code-eip" {
-  vpc = true
-}
-
-#Nat Gateway
-resource "aws_nat_gateway" "code-nat" {
-  allocation_id = aws_eip.code-eip.id
-  subnet_id     = aws_subnet.public.id
-
-  tags = {
-    Name = "CodeChallenge-NAT"
-  }
-
-  # To ensure proper ordering, add Internet Gateway as dependency
-  depends_on = [aws_internet_gateway.code-igw]
 }
 
 # Public Route table
@@ -73,29 +50,11 @@ resource "aws_route_table" "code-public-RT" {
 
 #Associate Public Route table
 resource "aws_route_table_association" "code-public-subnet-1" {
-  subnet_id      = aws_subnet.public.id
+  count         = length(var.availability_zones)
+  subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.code-public-RT.id
 }
 
-#Private Route table
-resource "aws_route_table" "code-private-RT" {
-  vpc_id = aws_vpc.codeVPC.id
-
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.code-nat.id
-  }
-
-  tags = {
-    Name = "Code-Private-RT"
-  }
-}
-
-#Associate Private Route table
-resource "aws_route_table_association" "code-private-subnet-1" {
-  subnet_id      = aws_subnet.private.id
-  route_table_id = aws_route_table.code-private-RT.id
-}
 
 # Security Group
 resource "aws_security_group" "dynamicSg" {
@@ -128,22 +87,25 @@ resource "aws_security_group" "dynamicSg" {
 }
 
 #EC2 Instance
-resource "aws_instance" "frontEnd" {
+resource "aws_instance" "code_challenge" {
+  count         = length(var.availability_zones)
   ami           = "ami-09d3b3274b6c5d4aa" 
   instance_type = "t2.micro"
 
-  subnet_id = aws_subnet.public.id
-
-  key_name               = "Best-KP"
+  subnet_id = aws_subnet.public[count.index].id
+  
+  key_name               = "[YOUR_KEY_PAIR_NAME]"
   vpc_security_group_ids = [aws_security_group.dynamicSg.id]
 
+# Path should lead to where your key pair file is stored.
   connection {
     type        = "ssh"
     user        = "ec2-user"
-    private_key = file("../../Key Pairs/Best-KP.pem") // private key should be located outside of project folder.
+    private_key = file("../KeyPair/[YOUR_KEY_PAIR_NAME].pem") // private key should be located outside of project folder.
     host        = self.public_ip
   }
   
+  # Remote commands on linux server
   provisioner "remote-exec" {
     inline = [
       "sudo yum update -y",
@@ -159,16 +121,20 @@ resource "aws_instance" "frontEnd" {
       "sudo npm install -g npm@9.1.1",
       "echo module.exports = {CORS_ORIGIN: \"'http://${self.public_ip}:3000'\"} | sudo tee devops-code-challenge/backend/config.js",
       "echo export const API_URL = \"'http://${self.public_ip}:8080/'\" | sudo tee devops-code-challenge/frontend/src/config.js",
-      "echo export default API_URL | sudo tee -a devops-code-challenge/frontend/src/config.js"
+      "echo export default API_URL | sudo tee -a devops-code-challenge/frontend/src/config.js",
+      "sudo npm install pm2 -g",
+      "sudo pm2 --name backend start npm -- start --prefix devops-code-challenge/backend/",
+      "sudo pm2 --name frontend start npm -- start --prefix devops-code-challenge/frontend/"
     ]
        
   }
 
   tags = {
-    "Name" = "TerraformWebserver-FrontEnd"
+    "Name" = "TerraformWebserver-CodeChallenge-${count.index}"
   }
 
 }
+
 
 locals {
   //project_name = "TerraformWebserver"
