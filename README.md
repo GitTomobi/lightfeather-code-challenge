@@ -1,4 +1,6 @@
 # lightfeather-code-challenge
+Link to VPC chart - https://imgur.com/a/ZotyZFM
+
 repo for code challenge
 
 This repo holds terraform code that will launch the code challenge app in a VPC environmet across 3 availability zones in us-east-1 (North Virginia) 
