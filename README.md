@@ -2,8 +2,23 @@
 repo for code challenge
 
 This repo holds terraform code that will launch the code challenge app in a VPC environmet across 3 availability zones in us-east-1 (North Virginia) 
+Terraform will create the infrastructure for:
 
-Requirements:
+1 VPC
+3 public subnets
+1 internet gateway
+1 public routing table
+1 security group
+3 ec2 instances across 3 availability zones
+
+Automated commands are sent to the server where the application is installed after retreiving the data from the forked code repo that holds the application files.
+
+Note:
+While not provisioned in the terraform code, Docker images were also created from the application data files and stored on DockerHub. The addresses to the containers are:
+Frontend - https://hub.docker.com/r/dkrtomobi/frontend-lightfeatherapp
+Backend - https://hub.docker.com/r/dkrtomobi/backend-lightfeatherapp
+
+# Requirements:
 - Visual Studio Code (or similar editor)
 - Terraform installation
 - AWS CLI
@@ -62,13 +77,6 @@ terraform plan
 
 terraform apply --auto-approve
 
-Terraform will create the infrastructure for:
 
-1 VPC
-3 public subnets
-1 internet gateway
-1 public routing table
-1 security group
-3 ec2 instances across 3 availability zones
 
 Navigating to the public ip address for any of the 3 instances and appending the port of :3000 after the ip address will open the webapp and display the guid.
