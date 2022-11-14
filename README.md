@@ -1,5 +1,7 @@
 # lightfeather-code-challenge
-Link to VPC chart - https://imgur.com/a/ZotyZFM
+VPC chart -
+
+<img src="https://imgur.com/a/ZotyZFM" width="50%" height="50%">
 
 repo for code challenge
 
