@@ -79,7 +79,7 @@ called "light-feather-code-challenge".
 * On line 99, replace [YOUR_KEY_PAIR_NAME] with the name of your downloaded keypair file.
 * On line 105, replace [YOUR_KEY_PAIR_NAME] with the name of your downloaded keypair file. Ensure the '.pem' remains
 
-#Initialize and run terraform code:
+# Initialize and run terraform code:
 * In VS Code terminal, change directory using 'cd' command into the 'light-feather-code-challenge' directory.
 Type into the terminal:
 `
