@@ -67,9 +67,9 @@ called "light-feather-code-challenge".
 
 # Download KeyPair:
 * Log into AWS
-* Use the aws searchbar and go to EC2 > Instances
-* Click launch instances
-* Scroll down to key pair section and click "Create new keypair"
+* Use the aws searchbar and go to EC2
+* On the left side menu, scroll down to Key Pairs and select it
+* On the top right, click "Create key pair"
 * Choose RSA and .PEM as your options and provide it a distinguishable name.
 * Click create key pair and it will download to your local machine.
 * Move the Keypair into your CodeChallenge > KeyPair folder.
