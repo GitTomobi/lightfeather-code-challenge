@@ -75,6 +75,7 @@ called "light-feather-code-challenge".
 * Move the Keypair into your CodeChallenge > KeyPair folder.
 
 # Update code with keypair name
+* Open codechallenge.tf in VS Code
 * On line 99, replace [YOUR_KEY_PAIR_NAME] with the name of your downloaded keypair file.
 * On line 105, replace [YOUR_KEY_PAIR_NAME] with the name of your downloaded keypair file. Ensure the '.pem' remains
 
